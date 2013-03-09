@@ -1,0 +1,11 @@
+{
+    "name" : "eventulevel",
+    "description" : "The cornerstone of an eventually consistent key/value store.",
+    "version" : "0.1.0",
+
+    "dependencies" : {
+        "levelup" : "0.6.x"
+        "flake" : "0.3.x"
+    }
+
+}
