@@ -6,8 +6,13 @@ key/value store.
 Every operation that happens to any item in the datastore is timestamped and therefore the history of any object can be
 replayed to produce the final result.
 
-For example, if we set the key 'chilts' to be { name : 'Andy Chilton', age : 101 }, then put another attribute { feet :
-2 }, followed by a delete of the 'age' attribute, the final object would be { name : 'Andy Chilton', feet : 2 }.
+For example, let's say we have a user called 'chilts' and we want to perform the following operations:
+
+* put { nick : 'chilts', email : 'me@example.com' }
+* delete the email address
+* add a real name
+* re-add a different email address
+* retrieve user
 
 In code, this would look like:
 
@@ -26,7 +31,8 @@ db.putAttrs('chilts', { email : 'andychilton@gmail.com' });
 
 // get the item back out
 db.getItem('chilts', function(err, item) {
-    console.log(item); // gives { nick : 'chilts', name : 'Andy Chilton', email : 'andychilton@gmail.com' }
+    // gives { nick : 'chilts', name : 'Andy Chilton', email : 'andychilton@gmail.com' }
+    console.log(item);
 });
 ```
 
