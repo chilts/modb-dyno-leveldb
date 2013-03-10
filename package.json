@@ -1,11 +1,33 @@
 {
-    "name" : "eventulevel",
-    "description" : "The cornerstone of an eventually consistent key/value store.",
+    "name" : "level-dyno",
+    "description" : "The basic cornerstone of an eventually consistent key/value store.",
     "version" : "0.1.0",
 
+    "main" : "level-dyno.js",
+    "devDependencies" : {
+        "tap" : "0.4.x"
+    },
     "dependencies" : {
-        "levelup" : "0.6.x"
+        "underscore" : "1.4.x",
+        "levelup" : "0.6.x",
         "flake" : "0.3.x"
-    }
+    },
+    "scripts" : {
+        "test" : "tap test/*.js"
+    },
+
+    "author" : {
+        "name" : "Andrew Chilton",
+        "email" : "andychilton@gmail.com",
+        "url" : "http://chilts.org/"
+    },
+    "contributors" : [],
+    "licenses" : [{
+        "type" : "MIT",
+        "url" : "http://github.com/chilts/level-dyno/raw/master/LICENSE"
+    }],
+    "keywords" : [
+        "datastore", "database", "leveldb", "levelup", "crdt", ""
+    ]
 
 }

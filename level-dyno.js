@@ -5,7 +5,7 @@ var levelup = require('levelup');
 
 // ----------------------------------------------------------------------------
 
-var EventuLevel = function(filename) {
+var LevelDyno = function(filename) {
     var self = this;
 
     self.db = levelup(filename);
@@ -18,7 +18,7 @@ var EventuLevel = function(filename) {
 
 // open(filename, callback) -> (err)
 if (false) {
-EventuLevel.prototype.open = function(filename, callback) {
+LevelDyno.prototype.open = function(filename, callback) {
     var self = this;
 
     levelup.open(filename, { create_if_missing: true }, function onOpen(err, db) {
@@ -31,10 +31,10 @@ EventuLevel.prototype.open = function(filename, callback) {
 
 // ----------------------------------------------------------------------------
 
-// putItem(timestamp, name, item, callback) -> (err)
+// putItem(name, item, timestamp, callback) -> (err)
 //
 // This replaces the entire item. It does not put individual attributes.
-EventuLevel.prototype.putItem = function(name, item, timestamp, callback) {
+LevelDyno.prototype.putItem = function(name, item, timestamp, callback) {
     var self = this;
 
     var key = makeKey(name, timestamp, 'putItem');
@@ -46,7 +46,7 @@ EventuLevel.prototype.putItem = function(name, item, timestamp, callback) {
 // putAttrs(name, item, timestamp, callback) -> (err)
 //
 // This replaces just the attributes given in the item specified.
-EventuLevel.prototype.putAttrs = function(name, item, timestamp, callback) {
+LevelDyno.prototype.putAttrs = function(name, item, timestamp, callback) {
     var self = this;
 
     var key = makeKey(name, timestamp, 'putAttrs');
@@ -58,7 +58,7 @@ EventuLevel.prototype.putAttrs = function(name, item, timestamp, callback) {
 // delAttrs(timestamp, name, attrs, callback) -> (err)
 //
 // This makes sure that all attrs in the item are deleted.
-EventuLevel.prototype.delAttrs = function(name, attrs, timestamp, callback) {
+LevelDyno.prototype.delAttrs = function(name, attrs, timestamp, callback) {
     var self = this;
 
     var key = makeKey(name, timestamp, 'delAttrs');
@@ -71,7 +71,7 @@ EventuLevel.prototype.delAttrs = function(name, attrs, timestamp, callback) {
 //
 // This gets the item and returns it. It reads *all* of the actions that have happened so far
 // and runs through them, making up the final item, which it returns.
-EventuLevel.prototype.getItem = function(name, callback) {
+LevelDyno.prototype.getItem = function(name, callback) {
     var self = this;
 
     // start off with a blank item
@@ -113,6 +113,9 @@ EventuLevel.prototype.getItem = function(name, callback) {
         })
         .on('end', function(data) {
             console.log('Stream ended');
+            if ( Object.keys(item).length === 0 ) {
+                return callback();
+            }
             callback(null, item);
         })
         .on('close', function(data) {
@@ -131,7 +134,7 @@ function makeKey(name, timestamp, operation) {
 // ----------------------------------------------------------------------------
 
 module.exports = exports = function(filename) {
-    return new EventuLevel(filename);
+    return new LevelDyno(filename);
 };
 
 // ----------------------------------------------------------------------------
