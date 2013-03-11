@@ -107,7 +107,7 @@ LevelDyno.prototype.getItem = function(name, callback) {
     // ToDo: remember the hash of all the changesets (ie. just their times)
 
     // read through all of the key/value pairs for this item
-    self.db.readStream({ start : start, end : end })
+    self.db.createReadStream({ start : start, end : end })
         .on('data', function(data) {
             console.log('' + data.key + ' = ' + data.value);
 
@@ -171,7 +171,7 @@ LevelDyno.prototype.flatten = function(name, timestamp, callback) {
     var end   = '' + name + '/' + timestamp + '~';
 
     // read through all of the key/value pairs for this item
-    self.db.readStream({ start : start, end : end })
+    self.db.createReadStream({ start : start, end : end })
         .on('data', function(data) {
             console.log('' + data.key + ' = ' + data.value);
 

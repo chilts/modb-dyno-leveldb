@@ -10,7 +10,7 @@
     },
     "dependencies" : {
         "underscore" : "1.4.x",
-        "levelup" : "0.6.x"
+        "levelup" : "0.6.2"
     },
     "scripts" : {
         "test" : "tap test/*.js"
