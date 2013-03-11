@@ -80,6 +80,25 @@ LevelDyno.prototype.delAttrs = function(name, attrs, timestamp, callback) {
 
 // ----------------------------------------------------------------------------
 
+function performOp(item, op, value) {
+    if ( op === 'putItem' ) {
+        // replace the entire item
+        item = value;
+    }
+    else if ( op === 'delItem' ) {
+        item = {};
+    }
+    else if ( op === 'putAttrs' ) {
+        item = _.extend(item, value);
+    }
+    else if ( op === 'delAttrs' ) {
+        value.forEach(function(v, i) {
+            delete item[v];
+        });
+    }
+    return item;
+}
+
 // getItem(name) -> (err, item, timestamp, changes)
 //
 // This gets the item and returns it. It reads *all* of the actions that have happened so far
@@ -120,24 +139,8 @@ LevelDyno.prototype.getItem = function(name, callback) {
             changes++;
             timestamps.push(timestamp);
 
-            var value = JSON.parse(data.value);
-
-            // depending on the operation, let's do something
-            if ( op === 'putItem' ) {
-                // replace the entire item
-                item = value;
-            }
-            else if ( op === 'delItem' ) {
-                item = {};
-            }
-            else if ( op === 'putAttrs' ) {
-                item = _.extend(item, value);
-            }
-            else if ( op === 'delAttrs' ) {
-                value.forEach(function(v, i) {
-                    delete item[v];
-                });
-            }
+            // perform this operation
+            item = performOp(item, op, JSON.parse(data.value));
         })
         .on('error', function(err) {
             console.log('Stream errored:', err);
@@ -193,30 +196,14 @@ LevelDyno.prototype.flatten = function(name, timestamp, callback) {
             var timestamp = parts[1];
             var op = parts[2];
 
-            var value = JSON.parse(data.value);
-
             // remove this key when we eventually get to replace all of this
             ops.push({
                 type : 'del',
                 key  : data.key,
             });
 
-            // depending on the operation, let's do something
-            if ( op === 'putItem' ) {
-                // replace the entire item
-                item = value;
-            }
-            else if ( op === 'delItem' ) {
-                item = {};
-            }
-            else if ( op === 'putAttrs' ) {
-                item = _.extend(item, value);
-            }
-            else if ( op === 'delAttrs' ) {
-                value.forEach(function(v, i) {
-                    delete item[v];
-                });
-            }
+            // perform this operation
+            item = performOp(item, op, JSON.parse(data.value));
         })
         .on('error', function(err) {
             console.log('Stream errored:', err);
