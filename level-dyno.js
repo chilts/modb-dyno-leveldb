@@ -235,7 +235,8 @@ function makeKey(name, timestamp, operation) {
 
 // ----------------------------------------------------------------------------
 
-module.exports = exports = function(filename) {
+// the createLevelDyno() function
+module.exports = exports = function createLevelDyno(filename) {
     return new LevelDyno(filename);
 };
 
