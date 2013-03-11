@@ -151,6 +151,81 @@ LevelDyno.prototype.getItem = function(name, callback) {
 };
 
 // ----------------------------------------------------------------------------
+
+// flatten(name, timestamp) -> (err)
+//
+// This runs through the first lot of changes up to the timestamp
+// and replaces them with what the item is at that point.
+LevelDyno.prototype.flatten = function(name, timestamp, callback) {
+    var self = this;
+
+    // start off with a blank item and remember the ops we want to perform
+    var item = {};
+    var ops = [];
+
+    console.log('Getting ' + name + ' ...');
+
+    // figure out the range of keys specified for this timestamp
+    var start = '' + name + '/';
+    var end   = '' + name + '/' + timestamp + '~';
+
+    // read through all of the key/value pairs for this item
+    self.db.readStream({ start : start, end : end })
+        .on('data', function(data) {
+            console.log('' + data.key + ' = ' + data.value);
+
+            // get this operation from the key
+            var parts = data.key.split(/\//);
+            var itemName = parts[0];
+            var timestamp = parts[1];
+            var op = parts[2];
+
+            var value = JSON.parse(data.value);
+
+            // remove this key when we eventually get to replace all of this
+            ops.push({
+                type : 'del',
+                key  : data.key,
+            });
+
+            // depending on the operation, let's do something
+            if ( op === 'putItem' ) {
+                // replace the entire item
+                item = value;
+            }
+            else if ( op === 'delItem' ) {
+                item = {};
+            }
+            else if ( op === 'putAttrs' ) {
+                item = _.extend(item, value);
+            }
+            else if ( op === 'delAttrs' ) {
+                value.forEach(function(v, i) {
+                    delete item[v];
+                });
+            }
+        })
+        .on('error', function(err) {
+            console.log('Stream errored:', err);
+        })
+        .on('end', function(data) {
+            console.log('Stream ended');
+
+            // replace all the history with one putItem
+            ops.push({
+                type : 'put',
+                key  : makeKey(name, timestamp, 'putItem'),
+                value : JSON.stringify(item),
+            });
+            self.db.batch(ops, callback);
+        })
+        .on('close', function(data) {
+            console.log('Stream closed');
+        })
+    ;
+};
+
+// ----------------------------------------------------------------------------
 // helper functions
 
 function makeKey(name, timestamp, operation) {
