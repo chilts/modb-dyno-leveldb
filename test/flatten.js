@@ -48,7 +48,7 @@ test('test chilts()', function(t) {
 
 test('test getItem()', function(t) {
     // get this item back
-    db.getItem('chilts', function(err, storedItem, timestamp, changes) {
+    db.getItem('chilts', function(err, storedItem, meta) {
         t.ok(!err, 'No error when getting an item back');
 
         var newItem = {
@@ -58,21 +58,21 @@ test('test getItem()', function(t) {
             logins : 0,
         };
 
-        t.equal(changes, 3, 'The number of changes is 3');
-        t.ok(timestamp, 'The timestamp is a true(ish) value');
+        t.equal(meta.changes, 3, 'The number of changes is 3');
+        t.ok(meta.timestamp, 'The timestamp is a true(ish) value');
         t.deepEqual(storedItem, newItem, 'Item is what we expect');
 
         // remember this timestamp
-        var lastTimestamp = timestamp;
+        var lastTimestamp = meta.timestamp;
 
         // now, let's flatten the item
-        db.flatten('chilts', timestamp, function(err) {
+        db.flatten('chilts', meta.timestamp, function(err) {
 
             // now, get the item back out
-            db.getItem('chilts', function(err, storedItem, timestamp, changes) {
+            db.getItem('chilts', function(err, storedItem, meta) {
                 t.deepEqual(storedItem, newItem, "Item hasn't changed even after the .flatten()");
-                t.equal(timestamp, lastTimestamp, "LastTimestamp is still the same after the .flatten()");
-                t.equal(changes, 1, 'The number of changes is now 1, after the .flatten()');
+                t.equal(meta.timestamp, lastTimestamp, "LastTimestamp is still the same after the .flatten()");
+                t.equal(meta.changes, 1, 'The number of changes is now 1, after the .flatten()');
                 t.end();
             });
         });

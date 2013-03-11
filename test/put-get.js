@@ -32,9 +32,12 @@ test('test putItem', function(t) {
 
 test('test getItem', function(t) {
     // get this item back
-    db.getItem('chilts', function(err, retrievedItem) {
+    db.getItem('chilts', function(err, retrievedItem, meta) {
         t.ok(!err, 'No error when getting an item back');
         t.deepEqual(retrievedItem, item, 'The item and the one stored are the same');
+        t.ok(meta.timestamp, 'Timestamp is there and is true(ish)');
+        t.equal(meta.changes, 1, 'So far, there has only been one change');
+        t.similar(meta.hash, /^[a-f0-9]{32}$/, 'hash looks like an MD5 hash');
         t.end();
     });
 });

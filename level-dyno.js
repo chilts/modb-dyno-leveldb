@@ -1,5 +1,7 @@
 // ----------------------------------------------------------------------------
 
+var crypto = require('crypto');
+
 var _ = require('underscore');
 var levelup = require('levelup');
 
@@ -9,7 +11,6 @@ var LevelDyno = function(filename) {
     var self = this;
 
     self.db = levelup(filename);
-    console.log('db:', self.db);
 
     return self;
 };
@@ -98,6 +99,7 @@ LevelDyno.prototype.getItem = function(name, callback) {
     // remember the count of changesets and the last timestamp we read
     var changes = 0;
     var lastTimestamp;
+    var timestamps = [];
     // ToDo: remember the hash of all the changesets (ie. just their times)
 
     // read through all of the key/value pairs for this item
@@ -111,9 +113,12 @@ LevelDyno.prototype.getItem = function(name, callback) {
             var timestamp = parts[1];
             var op = parts[2];
 
+            // console.log(itemName, timestamp, op);
+
             // remember where we are up to
             lastTimestamp = timestamp;
             changes++;
+            timestamps.push(timestamp);
 
             var value = JSON.parse(data.value);
 
@@ -142,7 +147,15 @@ LevelDyno.prototype.getItem = function(name, callback) {
             if ( Object.keys(item).length === 0 ) {
                 return callback();
             }
-            callback(null, item, lastTimestamp, changes);
+            // make a hash of all the timestamps
+
+            // now call back with the item and the metadata
+            var meta = {
+                timestamp : lastTimestamp,
+                changes   : changes,
+                hash      : crypto.createHash('md5').update(timestamps.join(' ')).digest('hex'),
+            };
+            callback(null, item, meta);
         })
         .on('close', function(data) {
             console.log('Stream closed');
@@ -217,6 +230,7 @@ LevelDyno.prototype.flatten = function(name, timestamp, callback) {
                 key  : makeKey(name, timestamp, 'putItem'),
                 value : JSON.stringify(item),
             });
+            console.log('ops:', ops);
             self.db.batch(ops, callback);
         })
         .on('close', function(data) {
