@@ -79,7 +79,7 @@ LevelDyno.prototype.delAttrs = function(name, attrs, timestamp, callback) {
 
 // ----------------------------------------------------------------------------
 
-// getItem(name) -> (err, item)
+// getItem(name) -> (err, item, timestamp, changes)
 //
 // This gets the item and returns it. It reads *all* of the actions that have happened so far
 // and runs through them, making up the final item, which it returns.
@@ -95,14 +95,25 @@ LevelDyno.prototype.getItem = function(name, callback) {
     var start = '' + name + '/';
     var end   = '' + name + '/~';
 
+    // remember the count of changesets and the last timestamp we read
+    var changes = 0;
+    var lastTimestamp;
+    // ToDo: remember the hash of all the changesets (ie. just their times)
+
     // read through all of the key/value pairs for this item
     self.db.readStream({ start : start, end : end })
         .on('data', function(data) {
             console.log('' + data.key + ' = ' + data.value);
 
             // get this operation from the key
-            var op = data.key.match(/\/(\w+)$/)[1];
-            console.log('op=' + op);
+            var parts = data.key.split(/\//);
+            var itemName = parts[0];
+            var timestamp = parts[1];
+            var op = parts[2];
+
+            // remember where we are up to
+            lastTimestamp = timestamp;
+            changes++;
 
             var value = JSON.parse(data.value);
 
@@ -131,7 +142,7 @@ LevelDyno.prototype.getItem = function(name, callback) {
             if ( Object.keys(item).length === 0 ) {
                 return callback();
             }
-            callback(null, item);
+            callback(null, item, lastTimestamp, changes);
         })
         .on('close', function(data) {
             console.log('Stream closed');
