@@ -43,6 +43,18 @@ LevelDyno.prototype.putItem = function(name, item, timestamp, callback) {
 
 // ----------------------------------------------------------------------------
 
+// delItem(name, timestamp, callback) -> (err)
+//
+// This makes sure that all attrs in the item are deleted.
+LevelDyno.prototype.delItem = function(name, timestamp, callback) {
+    var self = this;
+
+    var key = makeKey(name, timestamp, 'delItem');
+    self.db.put(key, JSON.stringify({}), callback);
+};
+
+// ----------------------------------------------------------------------------
+
 // putAttrs(name, item, timestamp, callback) -> (err)
 //
 // This replaces just the attributes given in the item specified.
@@ -98,6 +110,9 @@ LevelDyno.prototype.getItem = function(name, callback) {
             if ( op === 'putItem' ) {
                 // replace the entire item
                 item = value;
+            }
+            else if ( op === 'delItem' ) {
+                item = {};
             }
             else if ( op === 'putAttrs' ) {
                 item = _.extend(item, value);
