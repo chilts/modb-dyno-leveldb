@@ -17,21 +17,6 @@ var LevelDyno = function(filename) {
 
 // ----------------------------------------------------------------------------
 
-// open(filename, callback) -> (err)
-if (false) {
-LevelDyno.prototype.open = function(filename, callback) {
-    var self = this;
-
-    levelup.open(filename, { create_if_missing: true }, function onOpen(err, db) {
-        if (err) callback(err);
-        self.db = db;
-        callback();
-    });
-};
-}
-
-// ----------------------------------------------------------------------------
-
 // putItem(name, item, timestamp, callback) -> (err)
 //
 // This replaces the entire item. It does not put individual attributes.
