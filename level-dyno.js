@@ -113,7 +113,7 @@ LevelDyno.prototype.getItem = function(name, callback) {
     // read through all of the key/value pairs for this item
     self.db.createReadStream({ start : start, end : end })
         .on('data', function(data) {
-            console.log('' + data.key + ' = ' + data.value);
+            console.log('* ' + data.key + ' = ' + data.value);
 
             // Each changeset has a key and a value. Every key is the same but every value may be one of two forms:
             // key = itemName/timestamp/operation
@@ -181,12 +181,17 @@ LevelDyno.prototype.getItem = function(name, callback) {
 
 // ----------------------------------------------------------------------------
 
-// flatten(name, timestamp) -> (err)
+// flatten(name, hash) -> (err)
 //
-// This runs through the first lot of changes up to the timestamp
+// This runs through the first lot of changes up to where the hash is the same,
 // and replaces them with what the item is at that point.
-LevelDyno.prototype.flatten = function(name, timestamp, callback) {
+//
+// If we run through the entire item's history and we never find the hash
+// then we'll return an error.
+LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
     var self = this;
+
+    console.log('flatten(): entry - hash=' + flattenToHash);
 
     // start off with a blank item and remember the ops we want to perform
     var item = {};
@@ -196,12 +201,23 @@ LevelDyno.prototype.flatten = function(name, timestamp, callback) {
 
     // figure out the range of keys specified for this timestamp
     var start = '' + name + '/';
-    var end   = '' + name + '/' + timestamp + '~';
+    var end   = '' + name + '/~';
+
+    // remember the last hash
+    var lastHash;
+    var found = false;
+
+    var totalChangesets = 0;
 
     // read through all of the key/value pairs for this item
     self.db.createReadStream({ start : start, end : end })
         .on('data', function(data) {
-            console.log('' + data.key + ' = ' + data.value);
+            console.log('* ' + data.key + ' = ' + data.value);
+
+            // if we have already found this hash, then just return
+            if ( found ) {
+                return;
+            }
 
             // get this operation from the key
             var parts = data.key.split(/\//);
@@ -209,29 +225,77 @@ LevelDyno.prototype.flatten = function(name, timestamp, callback) {
             var timestamp = parts[1];
             var op = parts[2];
 
-            // remove this key when we eventually get to replace all of this
+            // figure out the history of _this_ item
+            var currentHash, thisValue;
+            if ( op === 'history' ) {
+                var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
+                currentHash = history[1];
+                totalChangesets   = parseInt(history[2]);
+                thisValue = history[3];
+            }
+            else {
+                // this is a regular operation
+                var hashThis;
+                if ( lastHash ) {
+                    hashThis = lastHash + "\n" + data.key + data.value;
+                }
+                else {
+                    hashThis = data.key + data.value;
+                }
+                currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
+                totalChangesets++;
+                thisValue = data.value;
+            }
+
+            console.log('currentHash=' + currentHash);
+
+            // remove this key when we eventually get to replace all of this history
             ops.push({
                 type : 'del',
                 key  : data.key,
             });
 
-            // perform this operation
-            item = performOp(item, op, JSON.parse(data.value));
+            // perform this operation so we have the latest
+            item = performOp(item, op, JSON.parse(thisValue));
+
+            // see if we have reached the hash that we want to flatten
+            if ( flattenToHash === currentHash ) {
+                // yes, we have reached the changeset we wish to flatten
+                console.log('YES! We have found the correct history hash to flatten');
+
+                // ToDo: finish this LevelUp query so we don't have to go through the rest of the keys
+
+                // ToDo: check if the history contains only one item, since there is no point flattening that
+
+                // replace all the history with one putItem
+                ops.push({
+                    type : 'put',
+                    key  : makeKey(name, timestamp, 'putItem'),
+                    value : JSON.stringify(item),
+                });
+
+                // remember that we have found this history hash
+                found = true;
+
+                // now, call .batch() to do the del/put and callback
+                self.db.batch(ops, callback);
+            }
         })
         .on('error', function(err) {
             console.log('Stream errored:', err);
+            // send this to the callback
+            callback(err);
         })
         .on('end', function(data) {
             console.log('Stream ended');
 
-            // replace all the history with one putItem
-            ops.push({
-                type : 'put',
-                key  : makeKey(name, timestamp, 'putItem'),
-                value : JSON.stringify(item),
-            });
-            console.log('ops:', ops);
-            self.db.batch(ops, callback);
+            // see if we found the history hash or not
+            if ( found ) {
+                // we have already flattened and called the callback in the 'data' event above
+            }
+            else {
+                callback(new Error('Could not find this history hash in this item'));
+            }
         })
         .on('close', function(data) {
             console.log('Stream closed');
