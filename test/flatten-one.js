@@ -36,6 +36,9 @@ test('test flatten()', function(t) {
 
         t.deepEqual(storedItem, item, 'Check the stored item is correct');
 
+        console.log(meta);
+        t.equal(meta.hash, 'dbdbab3832f5594e33ded7e286551518', 'The last hash of this item should be this');
+
         db.flatten('chilts', meta.hash, function(err) {
             t.ok(!err, 'No error when flattening an item');
             t.end();

@@ -132,18 +132,16 @@ LevelDyno.prototype.getItem = function(name, callback) {
             if ( op === 'history' ) {
                 var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
                 currentHash = history[1];
-                totalChangesets   = parseInt(history[2]);
+                totalChangesets = parseInt(history[2]);
                 thisValue = history[3];
             }
             else {
                 // this is a regular operation
-                var hashThis;
+                var hashThis = '';
                 if ( lastHash ) {
-                    hashThis = lastHash + "\n" + data.key + data.value;
+                    hashThis = lastHash + "\n";
                 }
-                else {
-                    hashThis = data.key + data.value;
-                }
+                hashThis += data.key + "\n" + data.value + "\n";
                 currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
                 totalChangesets++;
                 thisValue = data.value;
@@ -222,7 +220,7 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
             // get this operation from the key
             var parts = data.key.split(/\//);
             var itemName = parts[0];
-            var timestamp = parts[1];
+            var currentTimestamp = parts[1];
             var op = parts[2];
 
             // figure out the history of _this_ item
@@ -235,13 +233,11 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
             }
             else {
                 // this is a regular operation
-                var hashThis;
+                var hashThis = '';
                 if ( lastHash ) {
-                    hashThis = lastHash + "\n" + data.key + data.value;
+                    hashThis = lastHash + "\n";
                 }
-                else {
-                    hashThis = data.key + data.value;
-                }
+                hashThis += data.key + "\n" + data.value + "\n";
                 currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
                 totalChangesets++;
                 thisValue = data.value;
@@ -270,7 +266,7 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
                 // replace all the history with one putItem
                 ops.push({
                     type : 'put',
-                    key  : makeKey(name, timestamp, 'putItem'),
+                    key  : makeKey(name, currentTimestamp, 'putItem'),
                     value : JSON.stringify(item),
                 });
 
@@ -287,7 +283,7 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
             callback(err);
         })
         .on('end', function(data) {
-            console.log('Stream ended');
+            console.log('Stream ended, found=' + found);
 
             // see if we found the history hash or not
             if ( found ) {

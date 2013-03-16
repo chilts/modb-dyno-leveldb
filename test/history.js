@@ -24,8 +24,8 @@ var item = {
 // use our own timestamp
 var timestamp1 = '013d58c7276e-0000-188c-786ae2e1f629';
 var timestamp2 = '013d58c7276f-0002-188c-786ae2e1f629';
-var hash1 = '452f1689473f291c56a4c97b49ae2424';
-var hash2 = 'bd7cfce169eb5a39dd2a427bb52535c8';
+var hash1 = 'dbdbab3832f5594e33ded7e286551518';
+var hash2 = '5c9edc6d35a12fbc04ae73651175f216';
 
 test('test putItem()', function(t) {
     // put an item, but use our own timestamp
@@ -48,9 +48,9 @@ test('test getItem()', function(t) {
         t.deepEqual(storedItem, item, 'Item is what we expect');
 
         // test that we know what the hash is of
-        var hashThis = 'chilts/013d58c7276e-0000-188c-786ae2e1f629/putItem{"nick":"chilts"}';
+        var hashThis = 'chilts/013d58c7276e-0000-188c-786ae2e1f629/putItem\n{"nick":"chilts"}\n';
         var hash = crypto.createHash('md5').update(hashThis).digest('hex');
-        t.equal(meta.hash, hash, 'The caluculated hash and the one we expect are the same');
+        t.equal(meta.hash, hash, 'The calculated hash and the one we expect are the same');
 
         t.end();
     });
@@ -79,10 +79,10 @@ test('test putAttrs()', function(t) {
 
             // test that we know what the hash is of (the hash of the last changeset, plus this one)
             var hashThis = hash1 + "\n";
-            hashThis += 'chilts/013d58c7276f-0002-188c-786ae2e1f629/putAttrs{"admin":true}';
+            hashThis += 'chilts/' + timestamp2 + '/putAttrs\n{"admin":true}\n';
             console.log('hashThis=' + hashThis);
             var hash = crypto.createHash('md5').update(hashThis).digest('hex');
-            t.equal(meta.hash, hash, 'The caluculated hash and the one we expect are the same');
+            t.equal(meta.hash, hash, 'The calculated hash and the one we expect are the same');
 
             t.end();
         });
