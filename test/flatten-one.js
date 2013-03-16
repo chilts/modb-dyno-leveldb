@@ -1,5 +1,7 @@
 // ----------------------------------------------------------------------------
 
+var crypto = require('crypto');
+
 var underscore = require('underscore');
 var tap = require('tap');
 
@@ -36,7 +38,10 @@ test('test flatten()', function(t) {
 
         t.deepEqual(storedItem, item, 'Check the stored item is correct');
 
-        console.log(meta);
+        // test that we know what the hash is of
+        var hashThis = 'chilts/013d58c7276e-0000-188c-786ae2e1f629/putItem\n{"nick":"chilts"}\n';
+        var hash = crypto.createHash('md5').update(hashThis).digest('hex');
+        t.equal(meta.hash, hash, 'The calculated hash and the one we expect are the same');
         t.equal(meta.hash, 'dbdbab3832f5594e33ded7e286551518', 'The last hash of this item should be this');
 
         db.flatten('chilts', meta.hash, function(err) {

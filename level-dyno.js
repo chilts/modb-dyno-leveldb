@@ -131,6 +131,7 @@ LevelDyno.prototype.getItem = function(name, callback) {
             var currentHash, thisValue;
             if ( op === 'history' ) {
                 var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
+                console.log('*** history:', history);
                 currentHash = history[1];
                 totalChangesets = parseInt(history[2]);
                 thisValue = history[3];
@@ -228,7 +229,7 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
             if ( op === 'history' ) {
                 var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
                 currentHash = history[1];
-                totalChangesets   = parseInt(history[2]);
+                totalChangesets = parseInt(history[2]);
                 thisValue = history[3];
             }
             else {
@@ -238,12 +239,17 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
                     hashThis = lastHash + "\n";
                 }
                 hashThis += data.key + "\n" + data.value + "\n";
+                console.log('hashThis=' + hashThis);
                 currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
                 totalChangesets++;
                 thisValue = data.value;
             }
 
             console.log('currentHash=' + currentHash);
+
+            // remember these
+            lastHash = currentHash;
+            lastTimestamp = currentTimestamp;
 
             // remove this key when we eventually get to replace all of this history
             ops.push({
@@ -263,11 +269,11 @@ LevelDyno.prototype.flatten = function(name, flattenToHash, callback) {
 
                 // ToDo: check if the history contains only one item, since there is no point flattening that
 
-                // replace all the history with one putItem
+                // replace all of this history with one history operation
                 ops.push({
                     type : 'put',
-                    key  : makeKey(name, currentTimestamp, 'putItem'),
-                    value : JSON.stringify(item),
+                    key  : makeKey(name, currentTimestamp, 'history'),
+                    value : '' + currentHash + ':' + totalChangesets + ':' + JSON.stringify(item),
                 });
 
                 // remember that we have found this history hash
