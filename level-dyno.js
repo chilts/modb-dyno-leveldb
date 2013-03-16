@@ -66,7 +66,11 @@ LevelDyno.prototype.delAttrs = function(name, attrs, timestamp, callback) {
 // ----------------------------------------------------------------------------
 
 function performOp(item, op, value) {
-    if ( op === 'putItem' ) {
+    if ( op === 'history' ) {
+        // replace the entire item
+        item = value;
+    }
+    else if ( op === 'putItem' ) {
         // replace the entire item
         item = value;
     }
@@ -101,9 +105,9 @@ LevelDyno.prototype.getItem = function(name, callback) {
     var end   = '' + name + '/~';
 
     // remember the count of changesets and the last timestamp we read
-    var changes = 0;
+    var totalChangesets = 0;
     var lastTimestamp;
-    var timestamps = [];
+    var lastHash = '';
     // ToDo: remember the hash of all the changesets (ie. just their times)
 
     // read through all of the key/value pairs for this item
@@ -111,21 +115,46 @@ LevelDyno.prototype.getItem = function(name, callback) {
         .on('data', function(data) {
             console.log('' + data.key + ' = ' + data.value);
 
+            // Each changeset has a key and a value. Every key is the same but every value may be one of two forms:
+            // key = itemName/timestamp/operation
+            // val = ( json | history/changes/json )
+
             // get this operation from the key
             var parts = data.key.split(/\//);
             var itemName = parts[0];
-            var timestamp = parts[1];
+            var currentTimestamp = parts[1];
             var op = parts[2];
 
-            // console.log(itemName, timestamp, op);
+            // assert(itemName === name);
 
-            // remember where we are up to
-            lastTimestamp = timestamp;
-            changes++;
-            timestamps.push(timestamp);
+            // figure out the history of _this_ item
+            var currentHash, thisValue;
+            if ( op === 'history' ) {
+                var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
+                currentHash = history[1];
+                totalChangesets   = parseInt(history[2]);
+                thisValue = history[3];
+            }
+            else {
+                // this is a regular operation
+                var hashThis;
+                if ( lastHash ) {
+                    hashThis = lastHash + "\n" + data.key + data.value;
+                }
+                else {
+                    hashThis = data.key + data.value;
+                }
+                currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
+                totalChangesets++;
+                thisValue = data.value;
+            }
+
+            // remember these
+            lastHash = currentHash;
+            lastTimestamp = currentTimestamp;
 
             // perform this operation
-            item = performOp(item, op, JSON.parse(data.value));
+            item = performOp(item, op, JSON.parse(thisValue));
         })
         .on('error', function(err) {
             console.log('Stream errored:', err);
@@ -135,13 +164,12 @@ LevelDyno.prototype.getItem = function(name, callback) {
             if ( Object.keys(item).length === 0 ) {
                 return callback();
             }
-            // make a hash of all the timestamps
 
             // now call back with the item and the metadata
             var meta = {
-                timestamp : lastTimestamp,
-                changes   : changes,
-                hash      : crypto.createHash('md5').update(timestamps.join(' ')).digest('hex'),
+                timestamp  : lastTimestamp,
+                changesets : totalChangesets,
+                hash       : lastHash,
             };
             callback(null, item, meta);
         })
