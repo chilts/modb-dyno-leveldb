@@ -65,6 +65,18 @@ LevelDyno.prototype.delAttrs = function(name, attrs, timestamp, callback) {
 
 // ----------------------------------------------------------------------------
 
+// incAttr(name, attr, timestamp, callback) -> (err)
+//
+// This increments the attribute, or sets it to 'by' if it doesn't yet exist.
+LevelDyno.prototype.incAttr = function(name, attr, timestamp, callback) {
+    var self = this;
+
+    var key = makeKey(name, timestamp, 'add');
+    self.db.put(key, JSON.stringify({ field : attr, by : 1 }), callback);
+};
+
+// ----------------------------------------------------------------------------
+
 // incAttrBy(name, attr, by, timestamp, callback) -> (err)
 //
 // This increments the attribute, or sets it to 'by' if it doesn't yet exist.
@@ -73,13 +85,25 @@ LevelDyno.prototype.incAttrBy = function(name, attr, by, timestamp, callback) {
 
     // ToDo: check 'by' is a number
 
-    var key = makeKey(name, timestamp, 'incAttrBy');
+    var key = makeKey(name, timestamp, 'add');
     self.db.put(key, JSON.stringify({ field : attr, by : by }), callback);
 };
 
 // ----------------------------------------------------------------------------
 
-// decAttrBy(name, attr, by, timestamp, callback) -> (err)
+// decAttr(name, attr, timestamp, callback) -> (err)
+//
+// This decrements the attribute, or sets it to -by if it doesn't yet exist.
+LevelDyno.prototype.decAttr = function(name, attr, timestamp, callback) {
+    var self = this;
+
+    var key = makeKey(name, timestamp, 'add');
+    self.db.put(key, JSON.stringify({ field : attr, by : -1 }), callback);
+};
+
+// ----------------------------------------------------------------------------
+
+// decAttrBy(name, attr, timestamp, callback) -> (err)
 //
 // This decrements the attribute, or sets it to -by if it doesn't yet exist.
 LevelDyno.prototype.decAttrBy = function(name, attr, by, timestamp, callback) {
@@ -87,8 +111,8 @@ LevelDyno.prototype.decAttrBy = function(name, attr, by, timestamp, callback) {
 
     // ToDo: check 'by' is a number
 
-    var key = makeKey(name, timestamp, 'decAttrBy');
-    self.db.put(key, JSON.stringify({ field : attr, by : by }), callback);
+    var key = makeKey(name, timestamp, 'add');
+    self.db.put(key, JSON.stringify({ field : attr, by : -by }), callback);
 };
 
 // ----------------------------------------------------------------------------
@@ -125,24 +149,14 @@ function performOp(item, op, value) {
             delete item[v];
         });
     }
-    else if ( op === 'incAttrBy' ) {
+    else if ( op === 'add' ) {
+        // does incAttr, incAttrBy, decAttr, decAttrBy
         if ( typeof item[value.field] === 'number' ) {
-            // increment the item
             item[value.field] += value.by;
         }
         else {
             // overwrite the item (since we don't ever want to error)
             item[value.field] = value.by;
-        }
-    }
-    else if ( op === 'decAttrBy' ) {
-        if ( typeof item[value.field] === 'number' ) {
-            // increment the item
-            item[value.field] -= value.by;
-        }
-        else {
-            // overwrite the item (since we don't ever want to error)
-            item[value.field] = 0 - value.by;
         }
     }
     else if ( op === 'append' ) {

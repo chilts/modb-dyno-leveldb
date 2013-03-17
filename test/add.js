@@ -61,6 +61,39 @@ test('test getItem()', function(t) {
     });
 });
 
+test('test incAttr()/decAttr()', function(t) {
+    db.incAttr('chilts', 'logins', ts(), function(err) {
+        t.ok(!err, 'No error when incrementing an attribute');
+        db.decAttr('chilts', 'lives', ts(), function(err) {
+            t.ok(!err, 'No error when decrementing an attribute');
+            t.end();
+        });
+    });
+});
+
+test('test getItem()', function(t) {
+    // get this item back
+    db.getItem('chilts', function(err, storedItem) {
+        t.ok(!err, 'No error when getting an item back');
+
+        var newItem = {
+            nick : 'chilts',
+            uuid : 'f6deec09-c6c5-44eb-9c46-158bd35d0303',
+            admin : false,
+            logins : 29,
+            lives : 8,
+        };
+
+        console.log(storedItem);
+
+        t.deepEqual(storedItem, newItem, 'Item has been modified ok (incAttrBy())');
+        t.end();
+    });
+});
+
+// ----------------------------------------------------------------------------
+// test incrementing on a non-existing item
+
 test('test incAttrBy()', function(t) {
     db.incAttrBy('other', 'logins', 1, ts(), function(err) {
         t.ok(!err, 'No error when incrementing an attribute on a new item');
