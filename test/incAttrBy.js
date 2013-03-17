@@ -20,6 +20,7 @@ var item = {
     uuid : 'f6deec09-c6c5-44eb-9c46-158bd35d0303',
     admin : false,
     logins : 27,
+    lives : 10,
 };
 
 test('test putItem()', function(t) {
@@ -33,7 +34,10 @@ test('test putItem()', function(t) {
 test('test incAttrBy()', function(t) {
     db.incAttrBy('chilts', 'logins', 1, ts(), function(err) {
         t.ok(!err, 'No error when incrementing an attribute');
-        t.end();
+        db.decAttrBy('chilts', 'lives', 1, ts(), function(err) {
+            t.ok(!err, 'No error when decrementing an attribute');
+            t.end();
+        });
     });
 });
 
@@ -47,6 +51,7 @@ test('test getItem()', function(t) {
             uuid : 'f6deec09-c6c5-44eb-9c46-158bd35d0303',
             admin : false,
             logins : 28,
+            lives : 9,
         };
 
         console.log(storedItem);
@@ -56,11 +61,13 @@ test('test getItem()', function(t) {
     });
 });
 
-
 test('test incAttrBy()', function(t) {
     db.incAttrBy('other', 'logins', 1, ts(), function(err) {
         t.ok(!err, 'No error when incrementing an attribute on a new item');
-        t.end();
+        db.decAttrBy('other', 'lives', 1, ts(), function(err) {
+            t.ok(!err, 'No error when decrementing an attribute on a new item');
+            t.end();
+        });
     });
 });
 
@@ -70,7 +77,8 @@ test('test getItem()', function(t) {
         t.ok(!err, 'No error when getting the other item back');
 
         var newItem = {
-            logins : 1
+            logins : 1,
+            lives : -1,
         };
 
         console.log(storedItem);

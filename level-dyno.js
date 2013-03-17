@@ -79,6 +79,20 @@ LevelDyno.prototype.incAttrBy = function(name, attr, by, timestamp, callback) {
 
 // ----------------------------------------------------------------------------
 
+// decAttrBy(name, attr, by, timestamp, callback) -> (err)
+//
+// This replaces the entire item. It does not put individual attributes.
+LevelDyno.prototype.decAttrBy = function(name, attr, by, timestamp, callback) {
+    var self = this;
+
+    // ToDo: check 'by' is a number
+
+    var key = makeKey(name, timestamp, 'decAttrBy');
+    self.db.put(key, JSON.stringify({ field : attr, by : by }), callback);
+};
+
+// ----------------------------------------------------------------------------
+
 function performOp(item, op, value) {
     if ( op === 'history' ) {
         // replace the entire item
@@ -107,6 +121,16 @@ function performOp(item, op, value) {
         else {
             // overwrite the item (since we don't ever want to error)
             item[value.field] = value.by;
+        }
+    }
+    else if ( op === 'decAttrBy' ) {
+        if ( typeof item[value.field] === 'number' ) {
+            // increment the item
+            item[value.field] -= value.by;
+        }
+        else {
+            // overwrite the item (since we don't ever want to error)
+            item[value.field] = 0 - value.by;
         }
     }
     return item;
