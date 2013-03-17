@@ -5,11 +5,11 @@
 
     "main" : "level-dyno.js",
     "devDependencies" : {
-        "tap" : "0.4.x",
-        "flake" : "0.4.x"
+        "tap" : "0.4.x"
     },
     "dependencies" : {
         "underscore" : "1.4.x",
+        "flake" : "0.4.x",
         "levelup" : "0.6.2"
     },
     "scripts" : {
