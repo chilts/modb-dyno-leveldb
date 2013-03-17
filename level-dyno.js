@@ -67,7 +67,7 @@ LevelDyno.prototype.delAttrs = function(name, attrs, timestamp, callback) {
 
 // incAttrBy(name, attr, by, timestamp, callback) -> (err)
 //
-// This replaces the entire item. It does not put individual attributes.
+// This increments the attribute, or sets it to 'by' if it doesn't yet exist.
 LevelDyno.prototype.incAttrBy = function(name, attr, by, timestamp, callback) {
     var self = this;
 
@@ -81,7 +81,7 @@ LevelDyno.prototype.incAttrBy = function(name, attr, by, timestamp, callback) {
 
 // decAttrBy(name, attr, by, timestamp, callback) -> (err)
 //
-// This replaces the entire item. It does not put individual attributes.
+// This decrements the attribute, or sets it to -by if it doesn't yet exist.
 LevelDyno.prototype.decAttrBy = function(name, attr, by, timestamp, callback) {
     var self = this;
 
@@ -89,6 +89,18 @@ LevelDyno.prototype.decAttrBy = function(name, attr, by, timestamp, callback) {
 
     var key = makeKey(name, timestamp, 'decAttrBy');
     self.db.put(key, JSON.stringify({ field : attr, by : by }), callback);
+};
+
+// ----------------------------------------------------------------------------
+
+// append(name, attr, str, timestamp, callback) -> (err)
+//
+// This appends the 'str' to the attributes.
+LevelDyno.prototype.append = function(name, attr, str, timestamp, callback) {
+    var self = this;
+
+    var key = makeKey(name, timestamp, 'append');
+    self.db.put(key, JSON.stringify({ field : attr, str : str }), callback);
 };
 
 // ----------------------------------------------------------------------------
@@ -131,6 +143,17 @@ function performOp(item, op, value) {
         else {
             // overwrite the item (since we don't ever want to error)
             item[value.field] = 0 - value.by;
+        }
+    }
+    else if ( op === 'append' ) {
+        // make sure the item is a string
+        console.log('*** = ' + item[value.field]);
+        if ( typeof item[value.field] !== 'undefined' ) {
+            item[value.field] = '' + item[value.field] + value.str;
+        }
+        else {
+            // just set it to the string
+            item[value.field] = value.str;
         }
     }
     return item;
