@@ -5,23 +5,25 @@ var flake = require('flake')('eth0');
 // open a new database
 var db = dyno('/tmp/users');
 
+var user = 'chilts';
+
 // do the above sequence
-db.putItem('chilts', { nick : 'chilts', email : 'me@example.com' }, flake(), function(err) {
+db.putItem(user, { nick : 'chilts', email : 'me@example.com' }, flake(), function(err) {
     console.log('putItem(): done');
 });
 
-db.incAttrBy('chilts', 'logins', 1, flake(), function(err) {
+db.incAttrBy(user, 'logins', 1, flake(), function(err) {
     console.log('incAttrBy(): done');
 });
 
-db.delAttrs('chilts', [ 'email' ], flake(), function(err) {
+db.delAttrs(user, [ 'email' ], flake(), function(err) {
     console.log('delAttrs(): done');
 });
 
-db.putAttrs('chilts', { name : 'Andy Chilton' }, flake(), function(err) {
+db.putAttrs(user, { name : 'Andy Chilton' }, flake(), function(err) {
     console.log('putAttrs(): done');
 });
 
-db.putAttrs('chilts', { email : 'me@example.net' }, flake(), function(err) {
+db.putAttrs(user, { email : 'me@example.net' }, flake(), function(err) {
     console.log('putAttrs(): done');
 });
