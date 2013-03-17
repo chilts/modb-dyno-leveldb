@@ -41,7 +41,7 @@ test('test getItem', function(t) {
         t.deepEqual(retrievedItem, item, 'The item and the one stored are the same');
         t.ok(meta.timestamp, 'Timestamp is there and is true(ish)');
         t.equal(meta.timestamp, timestamp, 'Timestamp is there is what we expect');
-        t.equal(meta.changesets, 1, 'So far, there has only been one change');
+        t.equal(meta.changes, 1, 'So far, there has only been one change');
         t.similar(meta.hash, /^[a-f0-9]{32}$/, 'hash looks like an MD5 hash');
         t.end();
     });

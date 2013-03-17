@@ -96,7 +96,7 @@ test('test flatten()', function(t) {
                 t.deepEqual(item1, item2, '2) Item is identical after flattening');
 
                 t.equal(meta1.hash, meta2.hash, "Item's hash is still the same");
-                t.equal(meta1.changesets, meta2.changesets, "Item's changesets are the same");
+                t.equal(meta1.changes, meta2.changes, "Item's changes are the same");
 
                 t.end();
             });
@@ -119,7 +119,7 @@ test('test flatten()', function(t) {
                 t.deepEqual(item1, item2, '2) Item is identical after flattening');
 
                 t.equal(meta1.hash, meta2.hash, "Item's hash is still the same");
-                t.equal(meta1.changesets, meta2.changesets, "Item's changesets are the same");
+                t.equal(meta1.changes, meta2.changes, "Item's changes are the same");
 
                 t.end();
             });

@@ -40,7 +40,7 @@ test('test getItem()', function(t) {
     db.getItem('chilts', function(err, storedItem, meta) {
         t.ok(!err, 'No error when getting an item back');
 
-        t.equal(meta.changesets, 1, 'The number of changes is 1');
+        t.equal(meta.changes, 1, 'The number of changes is 1');
         t.ok(meta.timestamp, 'The timestamp is a true(ish) value');
         t.equal(meta.timestamp, timestamp1, 'The timestamp is what we expect');
         t.ok(meta.hash, 'The hash is a true(ish) value');
@@ -70,7 +70,7 @@ test('test putAttrs()', function(t) {
                 admin : true,
             };
 
-            t.equal(meta.changesets, 2, 'The number of changes is 2');
+            t.equal(meta.changes, 2, 'The number of changes is 2');
             t.ok(meta.timestamp, 'The timestamp is a true(ish) value');
             t.equal(meta.timestamp, timestamp2, 'The timestamp is what we expect');
             t.ok(meta.hash, 'The hash is a true(ish) value');
