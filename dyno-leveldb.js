@@ -298,6 +298,127 @@ LevelDyno.prototype.getItem = function(name, callback) {
     ;
 };
 
+function flattenItem(item) {
+    var flatItem = {};
+
+    var totalChanges = 0;
+    var lastTimestamp;
+    var lastHash = '';
+
+    item.forEach(function(data, i) {
+
+        // get this operation from the key
+        var parts = data.key.split(/\//);
+        var itemName = parts[0];
+        var currentTimestamp = parts[1];
+        var op = parts[2];
+
+        // assert(itemName === name);
+
+        // figure out the history of _this_ item
+        var currentHash, thisValue;
+        if ( op === 'history' ) {
+            var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
+            console.log('*** history:', history);
+            currentHash = history[1];
+            totalChanges = parseInt(history[2]);
+            thisValue = history[3];
+        }
+        else {
+            // this is a regular operation
+            var hashThis = '';
+            if ( lastHash ) {
+                hashThis = lastHash + "\n";
+            }
+            hashThis += data.key + "\n" + data.value + "\n";
+            currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
+            totalChanges++;
+            thisValue = data.value;
+        }
+
+        // remember these
+        lastHash = currentHash;
+        lastTimestamp = currentTimestamp;
+
+        // perform this operation
+        flatItem = performOp(flatItem, op, JSON.parse(thisValue));
+    });
+
+    // create the metadata
+    var meta = {
+        timestamp : lastTimestamp,
+        changes   : totalChanges,
+        hash      : lastHash,
+    };
+
+    if ( Object.keys(flatItem).length === 0 ) {
+        return { item : {}, meta : meta }
+    }
+
+    return { item : flatItem, meta : meta };
+}
+
+// query(query) -> (err, item, timestamp, changes)
+//
+// query({ start : 'james', end : 'john' }, callback);
+// query({ startEx : 'james', endEx : 'john' }, callback);
+//
+// This gets the item and returns it. It reads *all* of the actions that have happened so far
+// and runs through them, making up the final item, which it returns.
+LevelDyno.prototype.query = function(query, callback) {
+    var self = this;
+
+    // figure out the entire range of keys for this query
+    var start = '' + query.start + '/';
+    var end   = '' + query.end + '/~';
+
+    // let's start scanning the table for all items and changesets
+    var items = [];
+    var currentItem = [];
+    var currentItemName;
+    self.db.createReadStream({ start : start, end : end })
+        .on('data', function(data) {
+            console.log('* ' + data.key + ' = ' + data.value);
+            // split up the key and get the itemName
+            var parts = data.key.split(/\//);
+            var itemName = parts[0];
+
+            console.log('itemName=' + itemName);
+
+            if ( currentItemName ) {
+                if ( itemName === currentItemName ) {
+                    currentItem.push(data);
+                }
+                else {
+                    var item = flattenItem(currentItem);
+                    items.push(item);
+                    currentItem = [];
+                    currentItem.push(data);
+                }
+            }
+            else {
+                currentItem.push(data);
+            }
+            currentItemName = itemName;
+        })
+        .on('error', function(err) {
+            console.log('Stream errored:', err);
+        })
+        .on('end', function(data) {
+            var item = flattenItem(currentItem);
+            items.push(item);
+        })
+        .on('close', function() {
+            console.log('Stream closed');
+
+            // ok, let's print it all out for now
+            console.log(items);
+
+            callback(null, items);
+        })
+    ;
+};
+
 // ----------------------------------------------------------------------------
 
 // flatten(name, hash) -> (err)
