@@ -12,6 +12,7 @@ function newDyno() {
 // ----------------------------------------------------------------------------
 
 function pad(str, length) {
+    str = '' + str;
     while ( str.length < length ) {
         str = '0' + str;
     }
@@ -22,7 +23,7 @@ function pad(str, length) {
 var i = 0;
 function timestamp() {
     i++;
-    return (new Date()).toISOString() + '-' + pad(i, 16);
+    return (new Date()).toISOString() + '-' + pad(i, 8);
 }
 
 // ----------------------------------------------------------------------------
