@@ -1,8 +1,8 @@
 # level-dyno - The basic cornerstone of an eventually consistent key/value store. #
 
 'level-dyno' is (on the surface) a key/value store but is also the cornerstone of an eventually-consistent distributed
-key/value store. It uses Rod Vagg's excellent LevelUp to store the data on disk. This has other benefits too since
-LevelDB is great at doing some things (which we'll talk about later).
+key/value store. It uses Rod Vagg's excellent [LevelUp](https://npmjs.org/package/levelup) to store the data on
+disk. This has other benefits too since LevelDB is great at doing some things (which we'll talk about later).
 
 Every operation that happens to any item in the datastore is timestamped and therefore the history of any object can be
 replayed to produce the final result. We timestamp our items by using [flake](https://npmjs.org/package/flake) to
@@ -177,5 +177,14 @@ node examples/dump.js
 node examples/flatten.js
 node examples/dump.js
 ```
+
+# Author #
+
+Written by [Andrew Chilton](http://chilts.org/) - [Blog](http://chilts.org/blog/) -
+[Twitter](https://twitter.com/andychilton).
+
+# License #
+
+* http://chilts.mit-license.org/2013/
 
 (Ends)
