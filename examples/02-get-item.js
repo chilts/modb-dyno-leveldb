@@ -1,5 +1,5 @@
-// use level-dyno and open a new datastore
-var dyno = require('../level-dyno.js');
+// use dyno-leveldb and open a new datastore
+var dyno = require('../dyno-leveldb.js');
 
 // open a new database
 var db = dyno('/tmp/users');

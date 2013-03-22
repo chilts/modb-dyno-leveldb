@@ -4,7 +4,7 @@
 //
 // ----------------------------------------------------------------------------
 
-var dyno = require('../level-dyno.js');
+var dyno = require('../dyno-leveldb.js');
 function newDyno() {
     return dyno('/tmp/' + (new Date()).toISOString());
 };

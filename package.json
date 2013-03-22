@@ -1,9 +1,9 @@
 {
-    "name" : "level-dyno",
+    "name" : "dyno-leveldb",
     "description" : "The basic cornerstone of an eventually consistent key/value store.",
     "version" : "0.1.0",
 
-    "main" : "level-dyno.js",
+    "main" : "dyno-leveldb.js",
     "devDependencies" : {
         "tap" : "0.4.x"
     },
@@ -16,6 +16,16 @@
         "test" : "tap test/*.js"
     },
 
+    "homepage" : "https://github.com/chilts/dyno-leveldb/",
+    "repository" : {
+        "type" : "git",
+        "url" : "git://github.com/chilts/dyno-leveldb.git"
+    },
+    "bugs" : {
+        "url" : "https://github.com/chilts/dyno-leveldb/issues",
+        "mail" : "andychilton@gmail.com"
+    },
+
     "author" : {
         "name" : "Andrew Chilton",
         "email" : "andychilton@gmail.com",
@@ -24,7 +34,7 @@
     "contributors" : [],
     "licenses" : [{
         "type" : "MIT",
-        "url" : "http://github.com/chilts/level-dyno/raw/master/LICENSE"
+        "url" : "http://github.com/chilts/dyno-leveldb/raw/master/LICENSE"
     }],
     "keywords" : [
         "datastore", "database", "leveldb", "levelup", "crdt", ""

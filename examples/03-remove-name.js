@@ -1,5 +1,5 @@
-// use level-dyno and open a new datastore
-var dyno = require('../level-dyno.js');
+// use dyno-leveldb and open a new datastore
+var dyno = require('../dyno-leveldb.js');
 var flake = require('flake')('eth0');
 
 // open a new database

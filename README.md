@@ -1,6 +1,6 @@
-# level-dyno - The basic cornerstone of an eventually consistent key/value store. #
+# dyno-leveldb - The basic cornerstone of an eventually consistent key/value store. #
 
-'level-dyno' is (on the surface) a key/value store but is also the cornerstone of an eventually-consistent distributed
+'dyno-leveldb' is (on the surface) a key/value store but is also the cornerstone of an eventually-consistent distributed
 key/value store. It uses Rod Vagg's excellent [LevelUp](https://npmjs.org/package/levelup) to store the data on
 disk. This has other benefits too since LevelDB is great at doing some things (which we'll talk about later).
 
@@ -49,11 +49,11 @@ operation = putItem
 Most of these are easy to understand, but if you'd like to know more about approximately sortable practically unique
 timestamps, see [flake](https://npmjs.org/package/flake).
 
-The reason the key contains so much is to help level-dyno reconstruct the eventual value of this item. So, let's see how we would make such an item. The above steps would look something like this:
+The reason the key contains so much is to help dyno-leveldb reconstruct the eventual value of this item. So, let's see how we would make such an item. The above steps would look something like this:
 
 ## Example Code ##
 
-Using level-dyno is not much different to using other types of databases. Essentially you can do similar or slightly
+Using dyno-leveldb is not much different to using other types of databases. Essentially you can do similar or slightly
 different operations. You can put an item and get it back much like any other database. But you can also do things like
 increment a key, delete certain attributes or even add or remove an item from a set.
 
@@ -62,8 +62,8 @@ Let's take a look at some code which results in the above item:
 ```
 var timestamp = require('flake')('eth0');
 
-// use level-dyno and open a new datastore
-var dyno = require('./level-dyno.js');
+// use dyno-leveldb and open a new datastore
+var dyno = require('./dyno-leveldb.js');
 
 // open a new database
 var db = dyno('/tmp/users');
@@ -89,7 +89,7 @@ db.getItem('chilts', function(err, item) {
 });
 ```
 
-When retrieving an item from level-dyno, we're using special properties of the LevelDB implementation to help make it
+When retrieving an item from dyno-leveldb, we're using special properties of the LevelDB implementation to help make it
 fast. LevelDB is great at reading a sequence of keys which are sequential to each other. We use this property of
 LevelDB by storing all changeses for an item sequentially by starting each key with the item name and the (orderable)
 timestamp. This makes it easy to retrieve all changesets for an item and replay them, before finally returning the
@@ -97,7 +97,7 @@ eventual item's value.
 
 ## Flattening an Item ##
 
-Over time, an item can grow to become quite a number of operations. In these cases we want to flatten the item so that it takes up just one row in LevelDB rather than the number of rows it currently takes. When you get an item from level-dyno, you also receive a meta data object containing some iteresting fields:
+Over time, an item can grow to become quite a number of operations. In these cases we want to flatten the item so that it takes up just one row in LevelDB rather than the number of rows it currently takes. When you get an item from dyno-leveldb, you also receive a meta data object containing some iteresting fields:
 
 ```
 // get the item back out
@@ -125,7 +125,7 @@ As you can see, there are 5 changesets (putItem, incAttrBy, delAttrs, putAttrs, 
 and the hash is a long set of characters.
 
 It's this hash which is the most interesting. What this hash says is that if you hash each and every changeset, you end
-up with this hash. Take note of this idea, since it is important when we start using level-dyno in a distributed
+up with this hash. Take note of this idea, since it is important when we start using dyno-leveldb in a distributed
 environment. If another instance of level-node has these exact same 5 operations, with the same timestamps and the same
 values, then we can be sure that both instances are *exactly* the same.
 
