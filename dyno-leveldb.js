@@ -208,96 +208,6 @@ function performOp(item, op, value) {
     return item;
 }
 
-// getItem(name) -> (err, item, timestamp, changes)
-//
-// This gets the item and returns it. It reads *all* of the actions that have happened so far
-// and runs through them, making up the final item, which it returns.
-LevelDyno.prototype.getItem = function(name, callback) {
-    var self = this;
-
-    // start off with a blank item
-    var item = {};
-
-    console.log('Getting ' + name + ' ...');
-
-    // figure out the entire range of keys for this name
-    var start = '' + name + '/';
-    var end   = '' + name + '/~';
-
-    // remember the count of changesets and the last timestamp we read
-    var totalChanges = 0;
-    var lastTimestamp;
-    var lastHash = '';
-    // ToDo: remember the hash of all the changesets (ie. just their times)
-
-    // read through all of the key/value pairs for this item
-    self.db.createReadStream({ start : start, end : end })
-        .on('data', function(data) {
-            console.log('* ' + data.key + ' = ' + data.value);
-
-            // Each changeset has a key and a value. Every key is the same but every value may be one of two forms:
-            // key = itemName/timestamp/operation
-            // val = ( json | history/changes/json )
-
-            // get this operation from the key
-            var parts = data.key.split(/\//);
-            var itemName = parts[0];
-            var currentTimestamp = parts[1];
-            var op = parts[2];
-
-            // assert(itemName === name);
-
-            // figure out the history of _this_ item
-            var currentHash, thisValue;
-            if ( op === 'history' ) {
-                var history = data.value.match(/^([0-9a-f]+)\:(\d+):(.*)$/);
-                console.log('*** history:', history);
-                currentHash = history[1];
-                totalChanges = parseInt(history[2]);
-                thisValue = history[3];
-            }
-            else {
-                // this is a regular operation
-                var hashThis = '';
-                if ( lastHash ) {
-                    hashThis = lastHash + "\n";
-                }
-                hashThis += data.key + "\n" + data.value + "\n";
-                currentHash = crypto.createHash('md5').update(hashThis).digest('hex');
-                totalChanges++;
-                thisValue = data.value;
-            }
-
-            // remember these
-            lastHash = currentHash;
-            lastTimestamp = currentTimestamp;
-
-            // perform this operation
-            item = performOp(item, op, JSON.parse(thisValue));
-        })
-        .on('error', function(err) {
-            console.log('Stream errored:', err);
-        })
-        .on('end', function(data) {
-            console.log('Stream ended');
-            if ( Object.keys(item).length === 0 ) {
-                return callback();
-            }
-
-            // now call back with the item and the metadata
-            var meta = {
-                timestamp : lastTimestamp,
-                changes   : totalChanges,
-                hash      : lastHash,
-            };
-            callback(null, item, meta);
-        })
-        .on('close', function(data) {
-            console.log('Stream closed');
-        })
-    ;
-};
-
 function flattenItem(item) {
     var flatItem = {};
 
@@ -352,11 +262,46 @@ function flattenItem(item) {
     };
 
     if ( Object.keys(flatItem).length === 0 ) {
-        return { item : {}, meta : meta }
+        return { item : undefined, meta : meta }
     }
 
     return { item : flatItem, meta : meta };
 }
+
+// ----------------------------------------------------------------------------
+
+// getItem(name) -> (err, item, timestamp, changes)
+//
+// This gets the item and returns it. It reads *all* of the actions that have happened so far
+// and runs through them, making up the final item, which it returns.
+LevelDyno.prototype.getItem = function(name, callback) {
+    var self = this;
+
+    console.log('Getting ' + name + ' ...');
+
+    // figure out the entire range of keys for this name
+    var start = '' + name + '/';
+    var end   = '' + name + '/~';
+
+    var item = [];
+
+    // read through all of the key/value pairs for this item
+    self.db.createReadStream({ start : start, end : end })
+        .on('data', function(data) {
+            item.push(data);
+        })
+        .on('error', function(err) {
+            console.log('Stream errored:', err);
+        })
+        .on('end', function(data) {
+            item = flattenItem(item);
+            callback(null, item.item, item.meta);
+        })
+        .on('close', function(data) {
+            console.log('Stream closed');
+        })
+    ;
+};
 
 // query(query) -> (err, item, timestamp, changes)
 //
