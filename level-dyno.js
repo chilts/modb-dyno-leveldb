@@ -129,6 +129,18 @@ LevelDyno.prototype.append = function(name, attr, str, timestamp, callback) {
 
 // ----------------------------------------------------------------------------
 
+// (itemName, attr, value, timestamp, callback) -> (err)
+//
+// This adds the value to the item's attr set.
+LevelDyno.prototype.addToAttrSet = function(itemName, attr, value, timestamp, callback) {
+    var self = this;
+
+    var key = makeKey(itemName, timestamp, 'addToAttrSet');
+    self.db.put(key, JSON.stringify({ attr : attr, add : value }), callback);
+};
+
+// ----------------------------------------------------------------------------
+
 function performOp(item, op, value) {
     if ( op === 'history' ) {
         // replace the entire item
@@ -168,6 +180,29 @@ function performOp(item, op, value) {
         else {
             // just set it to the string
             item[value.field] = value.str;
+        }
+    }
+    else if ( op === 'addToAttrSet' ) {
+        // make sure the item is a string
+        console.log('*** addToAttrSet=' + item[value.attr]);
+        if ( value.attr in item ) {
+            // Fix: currently we're assuming it is already an object
+            console.log('Adding value to set');
+            if ( _.isObject(item[value.attr]) ) {
+                item[value.attr][value.add] = true;
+            }
+            else {
+                var existing = item[value.attr];
+                item[value.attr] = {};
+                item[value.attr][existing] = true;
+                item[value.attr][value.add] = true;
+            }
+        }
+        else {
+            // make a new object and set this value
+            console.log('Adding new set');
+            item[value.attr] = {};
+            item[value.attr][value.add] = true;
         }
     }
     return item;
