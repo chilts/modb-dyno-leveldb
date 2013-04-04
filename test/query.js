@@ -45,8 +45,7 @@ test('test putItem()', function(t) {
 });
 
 test('test query()', function(t) {
-    // query this table for people between 
-
+    // query this table for people between 'chilts' and 'goff'
     db.query({ start : 'chilts', end : 'goff' }, function(err, items) {
         t.ok(items.length, 'Got something from the query()');
         t.end();
