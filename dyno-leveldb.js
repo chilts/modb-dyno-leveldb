@@ -364,6 +364,88 @@ LevelDyno.prototype.query = function(query, callback) {
     ;
 };
 
+
+// scan(field, value, callback) -> (err, items)
+// scan(fn, callback) -> (err, items)
+//
+// scan('admin', true, callback);
+// scan('favColour', 'red', callback);
+//
+// This scans through all the items in the DB and returns any that fulfil the criteria.
+LevelDyno.prototype.scan = function(field, value, callback) {
+    var self = this;
+
+    var fn;
+    if ( !callback && typeof field === 'function' ) {
+        fn = field;
+        callback = value;
+        field = null
+        value = null;
+    }
+
+    // figure out the entire range of keys for this query
+    var start = '\x00';
+    var end   = '\xFF';
+
+    // let's start scanning the table for all items and changesets
+    var items = [];
+    var currentItem = [];
+    var currentItemName;
+    self.db.createReadStream({ start : start, end : end })
+        .on('data', function(data) {
+            console.log('* ' + data.key + ' = ' + data.value);
+            // split up the key and get the itemName
+            var parts = data.key.split(/\//);
+            var itemName = parts[0];
+
+            console.log('itemName=' + itemName);
+
+            if ( currentItemName ) {
+                if ( itemName === currentItemName ) {
+                    currentItem.push(data);
+                }
+                else {
+                    var item = flattenItem(currentItem);
+                    // only push this item if it fulfils the criteria
+                    if ( field && item.item[field] === value ) {
+                        items.push(item);
+                    }
+                    if ( fn && fn(item.item) ) {
+                        items.push(item);
+                    }
+                    currentItem = [];
+                    currentItem.push(data);
+                }
+            }
+            else {
+                currentItem.push(data);
+            }
+            currentItemName = itemName;
+        })
+        .on('error', function(err) {
+            console.log('Stream errored:', err);
+        })
+        .on('end', function(data) {
+            var item = flattenItem(currentItem);
+            // only push this final item if it fulfils the criteria
+            if ( field && item.item[field] === value ) {
+                items.push(item);
+            }
+            if ( fn && fn(item.item) ) {
+                items.push(item);
+            }
+        })
+        .on('close', function() {
+            console.log('Stream closed');
+
+            // ok, let's print it all out for now
+            console.log(items);
+
+            callback(null, items);
+        })
+    ;
+};
+
 // ----------------------------------------------------------------------------
 
 // flatten(name, hash) -> (err)
