@@ -31,10 +31,10 @@ test('test putItem()', function(t) {
         function(item, done) {
             i++;
             admin = !admin;
-            db.putItem(item, { id : i, nick : item, admin : admin }, ts(), function(err) {
-                db.incAttr(item, 'logins', ts(), function(err) {
-                    db.putAttrs(item, { upper : item.toUpperCase() }, ts(), function(err) {
-                        db.incAttr(item, 'logins', ts(), done);
+            db.putItem(item, ts(), { id : i, nick : item, admin : admin }, function(err) {
+                db.inc(item, ts(), 'logins', function(err) {
+                    db.put(item, ts(), { upper : item.toUpperCase() }, function(err) {
+                        db.inc(item, ts(), 'logins', done);
                     });
                 });
             });
@@ -56,7 +56,7 @@ test('test scan()', function(t) {
 
 test('test scan()', function(t) {
     // query the entire table for people who's nicks begin with 'g'
-    db.scan(function(item) { return item.nick.match(/^g/) }, function(err, items) {
+    db.scan(function(item) { return item.value.nick.match(/^g/) }, function(err, items) {
         t.equal(items.length, 3, "Got three people whos nicks begin with 'g'");
         t.end();
     });

@@ -10,7 +10,7 @@
     "dependencies" : {
         "underscore" : "1.4.x",
         "flake" : "0.4.x",
-        "levelup" : "0.6.2"
+        "levelup" : "0.7.x"
     },
     "scripts" : {
         "test" : "tap test/*.js"

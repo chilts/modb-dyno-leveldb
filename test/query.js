@@ -29,10 +29,10 @@ test('test putItem()', function(t) {
         names,
         function(item, done) {
             i++;
-            db.putItem(item, { id : i, nick : item }, ts(), function(err) {
-                db.incAttr(item, 'logins', ts(), function(err) {
-                    db.putAttrs(item, { upper : item.toUpperCase() }, ts(), function(err) {
-                        db.incAttr(item, 'logins', ts(), done);
+            db.putItem(item, ts(), { id : i, nick : item }, function(err) {
+                db.inc(item, ts(), 'logins', function(err) {
+                    db.put(item, ts(), { upper : item.toUpperCase() }, function(err) {
+                        db.inc(item, ts(), 'logins', done);
                     });
                 });
             });

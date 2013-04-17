@@ -25,16 +25,16 @@ var item = {
 
 test('test putItem()', function(t) {
     // put an item
-    db.putItem('chilts', item, ts(), function(err) {
+    db.putItem('chilts', ts(), item, function(err) {
         t.ok(!err, 'No error when putting an item');
         t.end();
     });
 });
 
-test('test incAttrBy()', function(t) {
-    db.incAttrBy('chilts', 'logins', 1, ts(), function(err) {
+test('test incBy()', function(t) {
+    db.incBy('chilts', ts(), 'logins', 1, function(err) {
         t.ok(!err, 'No error when incrementing an attribute');
-        db.decAttrBy('chilts', 'lives', 1, ts(), function(err) {
+        db.decBy('chilts', ts(), 'lives', 1, function(err) {
             t.ok(!err, 'No error when decrementing an attribute');
             t.end();
         });
@@ -43,7 +43,7 @@ test('test incAttrBy()', function(t) {
 
 test('test getItem()', function(t) {
     // get this item back
-    db.getItem('chilts', function(err, storedItem) {
+    db.getItem('chilts', function(err, changeset) {
         t.ok(!err, 'No error when getting an item back');
 
         var newItem = {
@@ -54,17 +54,17 @@ test('test getItem()', function(t) {
             lives : 9,
         };
 
-        console.log(storedItem);
+        console.log(changeset);
 
-        t.deepEqual(storedItem, newItem, 'Item has been modified ok (incAttrBy())');
+        t.deepEqual(changeset.value, newItem, 'Item has been modified ok (incBy())');
         t.end();
     });
 });
 
-test('test incAttr()/decAttr()', function(t) {
-    db.incAttr('chilts', 'logins', ts(), function(err) {
+test('test inc()/dec()', function(t) {
+    db.inc('chilts', ts(), 'logins', function(err) {
         t.ok(!err, 'No error when incrementing an attribute');
-        db.decAttr('chilts', 'lives', ts(), function(err) {
+        db.dec('chilts', ts(), 'lives', function(err) {
             t.ok(!err, 'No error when decrementing an attribute');
             t.end();
         });
@@ -73,7 +73,7 @@ test('test incAttr()/decAttr()', function(t) {
 
 test('test getItem()', function(t) {
     // get this item back
-    db.getItem('chilts', function(err, storedItem) {
+    db.getItem('chilts', function(err, changeset) {
         t.ok(!err, 'No error when getting an item back');
 
         var newItem = {
@@ -84,9 +84,9 @@ test('test getItem()', function(t) {
             lives : 8,
         };
 
-        console.log(storedItem);
+        console.log(changeset);
 
-        t.deepEqual(storedItem, newItem, 'Item has been modified ok (incAttrBy())');
+        t.deepEqual(changeset.value, newItem, 'Item has been modified ok (incBy())');
         t.end();
     });
 });
@@ -94,10 +94,10 @@ test('test getItem()', function(t) {
 // ----------------------------------------------------------------------------
 // test incrementing on a non-existing item
 
-test('test incAttrBy()', function(t) {
-    db.incAttrBy('other', 'logins', 1, ts(), function(err) {
+test('test incBy()', function(t) {
+    db.incBy('other', ts(), 'logins', 1, function(err) {
         t.ok(!err, 'No error when incrementing an attribute on a new item');
-        db.decAttrBy('other', 'lives', 1, ts(), function(err) {
+        db.decBy('other', ts(), 'lives', 1, function(err) {
             t.ok(!err, 'No error when decrementing an attribute on a new item');
             t.end();
         });
@@ -106,7 +106,7 @@ test('test incAttrBy()', function(t) {
 
 test('test getItem()', function(t) {
     // get this item back
-    db.getItem('other', function(err, storedItem) {
+    db.getItem('other', function(err, changeset) {
         t.ok(!err, 'No error when getting the other item back');
 
         var newItem = {
@@ -114,9 +114,9 @@ test('test getItem()', function(t) {
             lives : -1,
         };
 
-        console.log(storedItem);
+        console.log(changeset);
 
-        t.deepEqual(storedItem, newItem, 'Item has been modified ok (incAttrBy())');
+        t.deepEqual(changeset.value, newItem, 'Item has been modified ok (incBy())');
         t.end();
     });
 });

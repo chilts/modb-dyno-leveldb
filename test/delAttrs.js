@@ -16,7 +16,7 @@ var ts = helpers.timestamp;
 // ----------------------------------------------------------------------------
 
 var item = {
-    nick : 'delAttrs',
+    nick : 'del',
     uuid : 'f6deec09-c6c5-44eb-9c46-158bd35d0303',
     admin : false,
     logins : 27,
@@ -24,15 +24,15 @@ var item = {
 
 test('test putItem()', function(t) {
     // put an item
-    db.putItem('delAttrs', item, ts(), function(err) {
+    db.putItem('del', ts(), item, function(err) {
         t.ok(!err, 'No error when putting an item');
         t.end();
     });
 });
 
-test('test delAttrs()', function(t) {
+test('test del()', function(t) {
     // get this item back
-    db.delAttrs('delAttrs', [ 'admin', 'logins' ], ts(), function(err) {
+    db.del('del', ts(), [ 'admin', 'logins' ], function(err) {
         t.ok(!err, 'No error when deleting some attributes');
         t.end();
     });
@@ -40,15 +40,15 @@ test('test delAttrs()', function(t) {
 
 test('test getItem()', function(t) {
     // get this item back
-    db.getItem('delAttrs', function(err, storedItem) {
+    db.getItem('del', function(err, changeset) {
         t.ok(!err, 'No error when getting an item back');
 
         var newItem = {
-            nick : 'delAttrs',
+            nick : 'del',
             uuid : 'f6deec09-c6c5-44eb-9c46-158bd35d0303',
         };
 
-        t.deepEqual(storedItem, newItem, 'Item has been modified ok (delAttrs())');
+        t.deepEqual(changeset.value, newItem, 'Item has been modified ok (del())');
         t.end();
     });
 });

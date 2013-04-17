@@ -24,14 +24,14 @@ var item = {
 
 test('test putItem()', function(t) {
     // put an item
-    db.putItem('chilts', item, ts(), function(err) {
+    db.putItem('chilts', ts(), item, function(err) {
         t.ok(!err, 'No error when putting an item');
         t.end();
     });
 });
 
-test('test putAttrs()', function(t) {
-    db.putAttrs('chilts', { email : 'me@example.com', logins : 28, admin : true }, ts(), function(err) {
+test('test put()', function(t) {
+    db.put('chilts', ts(), { email : 'me@example.com', logins : 28, admin : true }, function(err) {
         t.ok(!err, 'No error when putting some attributes');
         t.end();
     });
@@ -39,7 +39,7 @@ test('test putAttrs()', function(t) {
 
 test('test getItem()', function(t) {
     // get this item back
-    db.getItem('chilts', function(err, storedItem) {
+    db.getItem('chilts', function(err, changesets) {
         t.ok(!err, 'No error when getting an item back');
 
         var newItem = {
@@ -50,9 +50,9 @@ test('test getItem()', function(t) {
             email : 'me@example.com',
         };
 
-        console.log(storedItem);
+        console.log(changesets);
 
-        t.deepEqual(storedItem, newItem, 'Item has been modified ok (putAttrs())');
+        t.deepEqual(changesets.value, newItem, 'Item has been modified ok (put())');
         t.end();
     });
 });

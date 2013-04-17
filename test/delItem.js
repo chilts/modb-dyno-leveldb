@@ -24,7 +24,7 @@ var item = {
 
 test('test putItem', function(t) {
     // put an item
-    db.putItem('chilts', item, ts(), function(err) {
+    db.putItem('chilts', ts(), item, function(err) {
         t.ok(!err, 'No error when putting an item');
         t.end();
     });
@@ -42,9 +42,9 @@ test('test delItem', function(t) {
 
 test('test getItem (no item found)', function(t) {
     // get this item back
-    db.getItem('chilts', function(err, item) {
+    db.getItem('chilts', function(err, changeset) {
         t.ok(!err, 'No error when getting an item back');
-        t.equal(item, undefined, 'Item is undefined');
+        t.equal(changeset.value, undefined, 'Item is undefined');
         t.end();
     });
 });
