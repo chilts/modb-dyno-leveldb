@@ -1,6 +1,6 @@
 {
     "name" : "dyno-leveldb",
-    "description" : "The basic cornerstone of an eventually consistent key/value store.",
+    "description" : "An implementation of dyno-abstract for a LevelDB store.",
     "version" : "0.1.0",
 
     "main" : "dyno-leveldb.js",
