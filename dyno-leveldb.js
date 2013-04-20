@@ -54,14 +54,11 @@ DynoLevelDB.prototype._putOperation = function(operationName, itemName, timestam
     });
 };
 
-
-// query(query) -> (err, item, timestamp, changes)
+// query(query) -> (err, items)
 //
 // query({ start : 'james', end : 'john' }, callback);
-// query({ startEx : 'james', endEx : 'john' }, callback);
 //
-// This gets the item and returns it. It reads *all* of the actions that have happened so far
-// and runs through them, making up the final item, which it returns.
+// This returns all the items between 'start' and 'end'.
 DynoLevelDB.prototype.query = function(query, callback) {
     var self = this;
 
