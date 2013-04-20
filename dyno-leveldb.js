@@ -27,11 +27,11 @@ util.inherits(DynoLevelDB, DynoAbstract);
 // Keys : look like "itemName/timestamp/operation"
 // ToDo: should probably move operation out to the value.
 
-DynoAbstract.prototype._makeKey = function makeKey(name, timestamp, operation) {
+DynoLevelDB.prototype._makeKey = function makeKey(name, timestamp, operation) {
     return name + '/' + timestamp + '/' + operation;
 }
 
-DynoAbstract.prototype._splitKey = function makeKey(key) {
+DynoLevelDB.prototype._splitKey = function makeKey(key) {
     var parts = key.split(/\//);
     return {
         itemName  : parts[0],
@@ -201,43 +201,6 @@ DynoLevelDB.prototype.scan = function(field, value, callback) {
             callback(null, items);
         })
     ;
-};
-
-// ----------------------------------------------------------------------------
-
-// flatten(itemName, hash) -> (err)
-//
-// This gets out all of the changes for this itemName and instruments them with
-// their changes and hashes. It then loops through each one and checks to see if
-// it correlates with the hash provided.
-//
-// At this point it replaces the history up to this point with flattened history
-// operation.
-//
-// If we run through the entire item's history and we never find the hash
-// then we'll return an error.
-DynoLevelDB.prototype.flatten = function(itemName, flattenToHash, callback) {
-    var self = this;
-
-    console.log('flatten(): entry - hash=' + flattenToHash);
-
-    // firstly, get the history
-    self._getChangesets(itemName, function(err, changesets) {
-        if (err) return callback(err);
-
-        // instrument the changesets with their meta data
-        changesets = self.instrumentChangesets(changesets);
-
-        // now loop through finding the hash
-        var upto;
-        changesets.forEach(function(changeset, i) {
-            if ( changeset.hash === flattenToHash ) {
-                upto = i;
-            }
-        });
-        console.log('Found hash at position ' + upto);
-        callback(null, upto);
-    });
 };
 
 // ----------------------------------------------------------------------------
