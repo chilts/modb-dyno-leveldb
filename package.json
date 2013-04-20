@@ -13,7 +13,7 @@
         "levelup" : "0.7.x"
     },
     "scripts" : {
-        "test" : "tap test/*.js"
+        "test" : "tap test-runner.js"
     },
 
     "homepage" : "https://github.com/chilts/dyno-leveldb/",
