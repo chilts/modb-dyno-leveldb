@@ -54,6 +54,28 @@ DynoLevelDB.prototype._putOperation = function(operationName, itemName, timestam
     });
 };
 
+// _replace([ keys ], itemName, timestamp, operation, change, callback) -> (err)
+//
+// This replaces the entire item. It does not put individual attributes.
+DynoLevelDB.prototype._replace = function(keys, itemName, timestamp, value, callback) {
+    var self = this;
+
+    var batch = [];
+    keys.forEach(function(key) {
+        batch.push({ type : 'del', key : key });
+    });
+
+    // replace the very last key with the history operation
+    var key = self._makeKey(itemName, timestamp, 'history');
+    batch.push({ type : 'put', key : key, value : JSON.stringify(value) });
+
+    // now exec the batch job
+    self.db.batch(batch, function(err, res) {
+        console.log('_replace(): err:', err);
+        callback(err, res);
+    });
+};
+
 // query(query) -> (err, items)
 //
 // query({ start : 'james', end : 'john' }, callback);
