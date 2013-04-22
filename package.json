@@ -1,9 +1,9 @@
 {
-    "name" : "dyno-leveldb",
-    "description" : "An implementation of dyno-abstract for a LevelDB store.",
+    "name" : "modb-dyno-leveldb",
+    "description" : "An implementation of modb-dyno-abstract for a LevelDB store.",
     "version" : "0.1.0",
 
-    "main" : "dyno-leveldb.js",
+    "main" : "index.js",
     "devDependencies" : {
         "tap" : "0.4.x"
     },
@@ -16,13 +16,13 @@
         "test" : "tap test-runner.js"
     },
 
-    "homepage" : "https://github.com/chilts/dyno-leveldb/",
+    "homepage" : "https://github.com/chilts/modb-dyno-leveldb/",
     "repository" : {
         "type" : "git",
-        "url" : "git://github.com/chilts/dyno-leveldb.git"
+        "url" : "git://github.com/chilts/modb-dyno-leveldb.git"
     },
     "bugs" : {
-        "url" : "https://github.com/chilts/dyno-leveldb/issues",
+        "url" : "https://github.com/chilts/modb-dyno-leveldb/issues",
         "mail" : "andychilton@gmail.com"
     },
 
@@ -34,7 +34,7 @@
     "contributors" : [],
     "licenses" : [{
         "type" : "MIT",
-        "url" : "http://github.com/chilts/dyno-leveldb/raw/master/LICENSE"
+        "url" : "http://github.com/chilts/modb-dyno-leveldb/raw/master/LICENSE"
     }],
     "keywords" : [
         "datastore", "database", "leveldb", "levelup", "crdt", ""
