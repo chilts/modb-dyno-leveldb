@@ -37,7 +37,7 @@
         "url" : "http://github.com/chilts/modb-dyno-leveldb/raw/master/LICENSE"
     }],
     "keywords" : [
-        "datastore", "database", "leveldb", "levelup", "crdt", ""
+        "datastore", "database", "leveldb", "levelup", "crdt", "modb-dyno-abstract", "modb-dyno", "dyno"
     ]
 
 }

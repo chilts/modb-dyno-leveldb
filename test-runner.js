@@ -9,14 +9,14 @@
 //
 // ----------------------------------------------------------------------------
 
-var dyno = require('./dyno-leveldb.js');
+var dyno = require('./modb-dyno-leveldb.js');
 
 function newDyno() {
     return dyno('/tmp/' + (new Date()).toISOString());
 };
 
 // ok, pass this function to the tests
-var tests = require('dyno-abstract/tests.js');
+var tests = require('modb-dyno-abstract/tests.js');
 tests(newDyno);
 
 // ----------------------------------------------------------------------------

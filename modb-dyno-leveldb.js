@@ -5,7 +5,7 @@ var util = require('util');
 
 var levelup = require('levelup');
 
-var DynoAbstract = require('dyno-abstract');
+var DynoAbstract = require('modb-dyno-abstract');
 
 // ----------------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ DynoLevelDB.prototype._putOperation = function(operationName, itemName, timestam
 // _replace([ keys ], itemName, timestamp, operation, change, callback) -> (err)
 //
 // This replaces the entire item. It does not put individual attributes.
-DynoLevelDB.prototype._replace = function(keys, itemName, timestamp, value, callback) {
+DynoLevelDB.prototype._replaceNotUsed = function(keys, itemName, timestamp, value, callback) {
     var self = this;
 
     var batch = [];
@@ -68,6 +68,33 @@ DynoLevelDB.prototype._replace = function(keys, itemName, timestamp, value, call
     // replace the very last key with the history operation
     var key = self._makeKey(itemName, timestamp, 'history');
     batch.push({ type : 'put', key : key, value : JSON.stringify(value) });
+
+    // now exec the batch job
+    self.db.batch(batch, function(err, res) {
+        console.log('_replace(): err:', err);
+        callback(err, res);
+    });
+};
+
+// _replace([ keys ], itemName, timestamp, operation, change, callback) -> (err)
+//
+// This replaces the entire item. It does not put individual attributes.
+DynoLevelDB.prototype._replace = function(changesets, callback) {
+    var self = this;
+
+    var batch = [];
+    changesets.forEach(function(changeset) {
+        var key = self._makeKey(changeset.name, changeset.timestamp, changeset.operation);
+        batch.push({ type : 'del', key : key });
+    });
+
+    // add this new changeset in, but with the 'history' operation
+    var changeset = changesets[changesets.length-1];
+    var key = self._makeKey(changeset.name, changeset.timestamp, 'history');
+    var value = [ changeset.hash, changeset.changes, JSON.stringify(changeset.item) ].join(':');
+    console.log('* key=' + key);
+    console.log('* val=' + value);
+    batch.push({ type : 'put', key : key, value : value });
 
     // now exec the batch job
     self.db.batch(batch, function(err, res) {
